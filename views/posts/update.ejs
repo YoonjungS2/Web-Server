@@ -1,0 +1,47 @@
+<div class="my-5">
+    <h1 class="text-center mb-5"><%=title%></h1>
+    <div id="div_post"></div>
+</div>
+<script id="temp_post" type="x-handlebars-template">
+    <form name="frm">
+        <input value="{{title}}"
+            name="title" placeholder="제목을 입력하세요." class="form-control mb-2">
+        <!-- placeholder : 힌트 -->
+        <textarea name="body" rows="10" placeholder="내용을 입력하세요." class="form-control">{{body}}</textarea>
+        <!-- rows : 여러 줄을 넣어줄 수 있음 -->
+
+        <div class="text-center my-3">
+            <button class="btn btn-primary px-5" type="submit">수정</button> 
+            <!-- 버튼 타입 3가지 : submit,  -->
+            <!-- 타입 생략시 submit -->
+            <button class="btn btn-secondary px-5" type="reset">취소</button>
+        </div>
+    </form>
+</script>
+<script type="module"> //기말 시험언급★ (module)
+    import { app } from "/javascripts/firebase.js";
+    import {getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    const db = getFirestore(app);
+
+    const id="<%=id%>";
+    const snapshot = await getDoc(doc(db, `posts/${id}`));
+    const post=snapshot.data();
+    console.log(post);
+
+    const temp=Handlebars.compile($("#temp_post").html());
+    $("#div_post").html(temp(post));
+
+    $(frm).on("submit", async function(e){ // 기말 언급(frm이 submit 됨)★ / 비동기 함수 async도 언급!
+        e.preventDefault();
+        if(confirm(`${id}번 게시글을 수정하실래요?`)) {
+            //수정 작업
+            const title=$(frm.title).val();
+            const body=$(frm.body).val();
+            const data={...post, title, body}; //title, body만 바뀌고 ...post(원래값을 그대로 복사)
+            await setDoc(doc(db, `posts/${id}`), data);
+            alert("수정 완료!")
+            location.href="/posts";
+        }
+    });
+
+</script>
